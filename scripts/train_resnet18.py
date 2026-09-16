@@ -86,7 +86,7 @@ def main() -> None:
     trainable = count_trainable_params(model)
     total = count_total_params(model)
     logger.info(
-        "ResNet18 (phase 1 — layer4+head) | trainable: %s / %s total",
+        "ResNet18 (phase 1 - layer4+head) | trainable: %s / %s total",
         f"{trainable:,}", f"{total:,}"
     )
 

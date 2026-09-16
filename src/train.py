@@ -281,7 +281,7 @@ def train(
                 },
                 checkpoint_path,
             )
-            logger.info("  ✓ Checkpoint saved (val_f1=%.4f)", best_val_f1)
+            logger.info("  [SAVED] Checkpoint (val_f1=%.4f)", best_val_f1)
         else:
             patience_counter += 1
             logger.info(

@@ -119,12 +119,12 @@ def evaluate_model(
 
     # --- Log ---
     logger.info("=" * 60)
-    logger.info("Evaluation results — %s split", split_name.upper())
+    logger.info("Evaluation results -- %s split", split_name.upper())
     logger.info("=" * 60)
     logger.info("Accuracy:          %.4f", accuracy)
     logger.info("Macro Precision:   %.4f", macro_precision)
     logger.info("Macro Recall:      %.4f", macro_recall)
-    logger.info("Macro F1:          %.4f  ← primary metric (imbalanced dataset)", macro_f1)
+    logger.info("Macro F1:          %.4f  (primary metric -- imbalanced dataset)", macro_f1)
     logger.info("Weighted F1:       %.4f", weighted_f1)
     logger.info("\nPer-class report:\n%s", report)
 
