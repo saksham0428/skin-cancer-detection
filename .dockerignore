@@ -1,0 +1,53 @@
+# Git / IDE
+.git/
+.gitignore
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Jupyter notebooks (not needed in container)
+notebooks/
+*.ipynb
+.ipynb_checkpoints/
+
+# Raw dataset (large, never in container — model is pre-trained)
+data/
+
+# Test files and fixtures
+tests/
+pytest.ini
+.pytest_cache/
+
+# Development scripts
+scripts/
+
+# Training artifacts
+# NOTE: If you are baking the model INTO the image (not using a volume mount),
+# comment out the line below and place the .pth file in models/ before building.
+models/
+
+# Documentation
+README.md
+*.md
+
+# Environment secrets
+.env
+*.env
+
+# Editor config
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store

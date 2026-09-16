@@ -1,7 +1,38 @@
+# Virtual environment
 .venv/
+venv/
+env/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+
+# Jupyter
 .ipynb_checkpoints/
-.env
+
+# Dataset (large raw data — never committed)
 data/raw/
 data/processed/
+
+# Environment secrets — NEVER commit
+.env
+*.env
+
+# Model checkpoints (large binary files — use git-lfs or share separately)
+models/*.pth
+
+# Training artifacts (keep JSON history but not large binaries)
+models/confusion_matrix_*.png
+
+# Pytest cache
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
