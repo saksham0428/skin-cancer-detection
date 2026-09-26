@@ -97,11 +97,21 @@ function App() {
       });
       setResult(response.data);
     } catch (err) {
-      const axiosError = err as AxiosError<{detail: string, error: string}>;
+      const axiosError = err as AxiosError<{detail: string | {detail?: string, error?: string}, error?: string}>;
       if (!axiosError.response) {
         setError('Cannot connect to the server. Please make sure the backend is running.');
       } else {
-        const msg = axiosError.response.data?.detail || 'An error occurred during analysis.';
+        const detailData = axiosError.response.data?.detail;
+        
+        let msg = 'An error occurred during analysis.';
+        if (typeof detailData === 'string') {
+          msg = detailData;
+        } else if (typeof detailData === 'object' && detailData !== null) {
+          msg = detailData.detail || detailData.error || msg;
+        } else if (axiosError.response.data?.error) {
+          msg = axiosError.response.data.error as string;
+        }
+        
         setError(msg);
       }
     } finally {
