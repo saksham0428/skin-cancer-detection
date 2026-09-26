@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     # Model type: "resnet18" or "simple_cnn"
     model_type: str = "resnet18"
     # Path to the .pth checkpoint file. Relative to project root.
-    model_checkpoint: str = "models/skin_lesion_resnet18.pth"
+    model_checkpoint: str = "models/skin_lesion_resnet18_softweights_finetuned.pth"
 
     @property
     def model_path(self) -> Path:

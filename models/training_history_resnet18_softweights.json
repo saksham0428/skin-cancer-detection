@@ -1,0 +1,58 @@
+{
+  "model_type": "resnet18_softweights",
+  "best_val_f1": 0.755174,
+  "history": {
+    "train_loss": [
+      0.135513,
+      0.123991,
+      0.111457,
+      0.090054,
+      0.070719
+    ],
+    "train_acc": [
+      0.949445,
+      0.95606,
+      0.959306,
+      0.966421,
+      0.97441
+    ],
+    "val_loss": [
+      0.600201,
+      0.722276,
+      0.650783,
+      0.764066,
+      0.688517
+    ],
+    "val_acc": [
+      0.833333,
+      0.805389,
+      0.827345,
+      0.799401,
+      0.822355
+    ],
+    "val_f1": [
+      0.712959,
+      0.714756,
+      0.715226,
+      0.70012,
+      0.70862
+    ],
+    "lr": [
+      0.00015,
+      0.00015,
+      0.00015,
+      0.00015,
+      7.5e-05
+    ]
+  },
+  "config": {
+    "model_type": "resnet18_softweights",
+    "num_epochs": 25,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "batch_size": 32,
+    "early_stopping_patience": 5,
+    "freeze_backbone": true,
+    "checkpoint_name": "skin_lesion_resnet18_softweights.pth"
+  }
+}

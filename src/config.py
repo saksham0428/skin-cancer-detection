@@ -96,15 +96,15 @@ SIMPLE_CNN_CONFIG: dict = {
 
 RESNET18_CONFIG: dict = {
     "model_type": "resnet18",
-    "num_epochs": 20,
+    "num_epochs": 15,
     # Lower LR for fine-tuning — pre-trained weights are already good
     "learning_rate": 3e-4,
     "weight_decay": 1e-4,
     "batch_size": BATCH_SIZE,
-    "early_stopping_patience": 6,
+    "early_stopping_patience": 5,
     # Freeze all layers except layer4 + fc — train only ~2.8M / 11M params
     "freeze_backbone": True,
-    "checkpoint_name": "skin_lesion_resnet18.pth",
+    "checkpoint_name": "skin_lesion_resnet18_baseline.pth",
 }
 
 # ---------------------------------------------------------------------------

@@ -102,7 +102,7 @@ def load_model(
 
     # map_location=device ensures CPU-only machines can load checkpoints
     # even if they were saved on a machine with CUDA.
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
 
     # Validate checkpoint structure
     required_keys = {"model_state_dict", "model_type", "num_classes"}
@@ -119,7 +119,7 @@ def load_model(
     # Reconstruct the model architecture
     if model_type == "simple_cnn":
         model = SimpleCNN(num_classes=num_classes)
-    elif model_type == "resnet18":
+    elif model_type in ("resnet18", "resnet18_softweights", "resnet18_softweights_finetuned"):
         # pretrained=False — we load weights from checkpoint, not from ImageNet
         model = build_resnet18(
             num_classes=num_classes,

@@ -48,10 +48,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+import argparse
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Train ResNet18")
+    parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume from")
+    args = parser.parse_args()
+
     set_seed(RANDOM_SEED)
-    device = torch.device("cpu")
-    logger.info("Device: %s", device)
+    from src.device import get_device
+    device = get_device()
 
     # --- Load splits ---
     train_df = pd.read_csv(PROCESSED_DIR / "train.csv")
@@ -90,18 +96,23 @@ def main() -> None:
         f"{trainable:,}", f"{total:,}"
     )
 
+    # --- Update config for new checkpoint name ---
+    config = dict(RESNET18_CONFIG)
+    config["checkpoint_name"] = "skin_lesion_resnet18_resume.pth"
+
     # --- Phase 1: Train frozen backbone ---
     history = train(
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,
         class_weights=class_weights,
-        config=RESNET18_CONFIG,
+        config=config,
         device=device,
+        resume_checkpoint=args.resume,
     )
 
-    logger.info("Phase 1 complete. Best val_f1: %.4f", max(history["val_f1"]))
-    logger.info("Training complete. Checkpoint: models/skin_lesion_resnet18.pth")
+    logger.info("Phase 1 complete. Best val_f1: %.4f", max(history["val_f1"]) if history["val_f1"] else 0.0)
+    logger.info("Training complete. Checkpoint: models/%s", config["checkpoint_name"])
 
 
 if __name__ == "__main__":

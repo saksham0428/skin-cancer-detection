@@ -160,17 +160,17 @@ Linear(256→7)                           → logits [B, 7]
 
 Total parameters: **~25.8M**
 
-### Transfer Learning — ResNet18
+### Transfer Learning — ResNet18 (Final Fine-tuned Model)
 
-ImageNet pretrained ResNet18, fine-tuned on HAM10000.
+ImageNet pretrained ResNet18, fully fine-tuned on HAM10000.
 
-**Strategy (Phase 1):**
-- Freeze all layers except `layer4` (last residual block) and the new FC head
-- Replace the original 1000-class head with `Dropout(0.4) + Linear(512→7)`
-- Trainable parameters: **~2.8M / 11.7M total**
+**Strategy:**
+- **Phase 1 (Frozen):** Froze all layers except `layer4` and the FC head. Handled class imbalance using heavily softened weights.
+- **Phase 2 (Fine-tuning):** Unfroze the entire backbone. Used differential learning rates (1e-5 for the backbone, 1e-4 for the classification head).
+- Checkpoint: `models/skin_lesion_resnet18_softweights_finetuned.pth`
 
 **Why ResNet18 over ResNet50 or EfficientNet?**
-- CPU-only machine — ResNet50 would be 3–5× slower per epoch
+- CPU-only / DirectML limitations — ResNet50 would be 3–5× slower per epoch
 - EfficientNet requires the `timm` library (new dependency)
 - ResNet18 is well-studied for medical imaging and achieves competitive results on HAM10000
 
@@ -178,27 +178,19 @@ ImageNet pretrained ResNet18, fine-tuned on HAM10000.
 
 ## Class Imbalance Handling
 
-**Strategy: Class-Weighted CrossEntropyLoss**
+**Strategy: Class-Weighted CrossEntropyLoss (Softened)**
 
-Weights are computed using the sklearn "balanced" formula:
+Weights are computed using the sklearn "balanced" formula, but we introduced a "softening" factor by taking the square root to prevent the model from over-penalizing majority classes and collapsing.
 
-```
-weight_i = total_samples / (num_classes × count_i)
-```
-
-| Class | Count | Weight |
+| Class | Count | Softened Weight |
 |-------|-------|--------|
-| nv | 5363 | 0.21 |
-| mel | 890 | 1.27 |
-| bkl | 879 | 1.29 |
-| bcc | 411 | 2.75 |
-| akiec | 262 | 4.32 |
-| vasc | 114 | 9.91 |
-| df | 92 | 12.28 |
-
-**Why weighted loss over WeightedRandomSampler?**
-
-With a 58:1 imbalance, `WeightedRandomSampler` would present the `df` class ~58× more than its actual frequency. This level of oversampling forces the model to see the same 92 `df` images on nearly every batch, which leads to overfitting on minority classes and degraded generalization. Weighted loss keeps the natural data distribution while penalising errors on minority classes more heavily — a better trade-off for a dataset of this size.
+| nv | 5363 | 0.25 |
+| mel | 890 | 0.60 |
+| bkl | 879 | 0.61 |
+| bcc | 411 | 0.89 |
+| akiec | 262 | 1.11 |
+| vasc | 114 | 1.68 |
+| df | 92 | 1.87 |
 
 **Primary validation metric: Macro F1** (not accuracy)
 
@@ -210,16 +202,15 @@ Accuracy is a misleading metric for imbalanced data. A model predicting only `nv
 
 ### Configuration
 
-| Hyperparameter | SimpleCNN | ResNet18 |
+| Hyperparameter | SimpleCNN | ResNet18 (Phase 2 Fine-tuned) |
 |---------------|-----------|---------|
-| Epochs | 15 | 20 |
-| Learning Rate | 1e-3 | 3e-4 |
+| Epochs | 15 | 15 (Early Stopped at 6) |
+| Learning Rate | 1e-3 | Head: 1e-4, Backbone: 1e-5 |
 | Weight Decay | 1e-4 | 1e-4 |
 | Batch Size | 32 | 32 |
 | Optimizer | Adam | Adam |
-| LR Schedule | ReduceLROnPlateau (val F1, ×0.5, patience=3) | same |
-| Early Stopping | patience=5 on val macro F1 | patience=6 |
-| Class Weighting | ✓ | ✓ |
+| Early Stopping | patience=5 on val macro F1 | patience=5 |
+| Class Weighting | ✓ | ✓ (Softened) |
 
 ### Running Training
 
@@ -227,53 +218,28 @@ Accuracy is a misleading metric for imbalanced data. A model predicting only `nv
 # Activate virtual environment
 .venv\Scripts\activate
 
-# Train SimpleCNN baseline
-python scripts/train_simple_cnn.py
+# Train Phase 1
+python scripts/train_resnet18_softweights.py
 
-# Train ResNet18 (recommended)
-python scripts/train_resnet18.py
+# Train Phase 2 (Fine-tuning)
+python scripts/finetune_resnet18_softweights.py
 ```
 
 Training checkpoints are saved to `models/` automatically.
 
-### Model Checkpoint Format
-
-```python
-{
-    "model_state_dict": ...,
-    "model_type": "resnet18",        # or "simple_cnn"
-    "num_classes": 7,
-    "class_names": ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"],
-    "preprocessing": {
-        "image_size": 224,
-        "mean": [0.485, 0.456, 0.406],
-        "std": [0.229, 0.224, 0.225]
-    },
-    "epoch": 12,
-    "val_f1": 0.7234,
-    "val_acc": 0.8521,
-    "config": { ... }
-}
-```
-
 ---
 
-## Evaluation Metrics
+## Final Model Evaluation Metrics
 
-After model selection, the test split is evaluated with:
+After locking the final model (`models/skin_lesion_resnet18_softweights_finetuned.pth`), we evaluated it exactly once on the sealed 1002-image Test Set:
 
-```bash
-python scripts/evaluate_model.py --model resnet18 --split test
-```
+- **Overall Test Accuracy:** 82.63%
+- **Macro Precision:** 72.05%
+- **Macro Recall:** 67.03%
+- **Macro F1:** **69.05%**
+- **Weighted F1:** 82.42%
 
-Metrics produced:
-- **Overall accuracy**
-- **Macro precision / recall / F1** (primary — treats all classes equally)
-- **Weighted F1** (weighted by class frequency)
-- **Per-class precision / recall / F1** for all 7 classes
-- **Normalised confusion matrix** (saved as PNG)
-
-Results are saved to `models/evaluation_metrics_test.json`.
+*Key error reduction:* The dangerous `nv → mel` misclassifications were reduced to just 31 instances out of 1002 test images.
 
 > **Important:** Because this dataset is severely imbalanced, **macro F1 is the primary metric**. Weighted metrics are biased toward the majority class (`nv`) and can mask poor performance on rare but clinically important classes.
 
