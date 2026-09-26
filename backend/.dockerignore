@@ -33,7 +33,6 @@ scripts/
 # Training artifacts
 # NOTE: If you are baking the model INTO the image (not using a volume mount),
 # comment out the line below and place the .pth file in models/ before building.
-models/
 
 # Documentation
 README.md

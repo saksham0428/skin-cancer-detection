@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: skin-cancer-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: MODEL_TYPE
+        value: resnet18
+      - key: MODEL_CHECKPOINT
+        value: models/skin_lesion_resnet18_softweights_finetuned.pth
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "10"
+      - key: ALLOWED_ORIGINS
+        sync: false
