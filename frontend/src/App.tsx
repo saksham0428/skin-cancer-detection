@@ -135,13 +135,22 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 text-white p-2 rounded-lg">
-              <UploadCloud className="w-6 h-6" />
+              {/* SKYNEX Eye-Scan Logo */}
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 12C2 12 6 5 12 5s10 7 10 7-4 7-10 7S2 12 2 12z" />
+                <circle cx="12" cy="12" r="2.8" fill="currentColor" stroke="none" />
+                <path d="M12 8v1M12 15v1M8 12H7M17 12h-1" strokeWidth="1.2" opacity="0.7" />
+                <path d="M9.5 9.5l-.7-.7M15.2 14.5l-.7-.7M14.5 9.5l.7-.7M9.2 14.5l.7-.7" strokeWidth="1" opacity="0.5" />
+              </svg>
             </div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-800">
-              Skin Lesion Analysis Dashboard
-            </h1>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-none">
+                SKYNEX
+              </h1>
+              <p className="text-xs text-blue-600 font-medium tracking-wide mt-0.5">See Beyond the Surface</p>
+            </div>
           </div>
-          <div className="text-sm text-slate-500 font-medium">Research & Education Edition</div>
+          <div className="text-sm text-slate-500 font-medium">Research &amp; Education Edition</div>
         </div>
       </header>
 

@@ -16,8 +16,8 @@ describe('App Component', () => {
 
   it('renders the dashboard and disclaimer', () => {
     render(<App />);
-    expect(screen.getByText(/Skin Lesion Analysis Dashboard/i)).toBeInTheDocument();
-    expect(screen.getByText(/Medical Disclaimer/i)).toBeInTheDocument();
+    expect(screen.getByText(/SKYNEX/i)).toBeInTheDocument();
+    expect(screen.getByText(/See Beyond the Surface/i)).toBeInTheDocument();
   });
 
   it('shows error for unsupported file type', async () => {
