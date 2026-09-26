@@ -5,7 +5,8 @@ directory as the service root, and choose **Docker**. Render uses the included
 `Dockerfile`; the endpoints are `GET /health` and `POST /predict`.
 
 In Render, set `ALLOWED_ORIGINS` to the exact Vercel URL, for example
-`https://my-app.vercel.app`.
+`https://my-app.vercel.app`. Use `.env.production.example` as the
+production-variable reference.
 
 ## Required model file
 
