@@ -1,5 +1,5 @@
-import React, { useState, useRef, ChangeEvent, DragEvent } from 'react';
-import axios, { AxiosError } from 'axios';
+import { useState, useRef, type ChangeEvent, type DragEvent } from 'react';
+import axios, { type AxiosError } from 'axios';
 import { UploadCloud, AlertCircle, Loader2, RefreshCw, Info } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -8,7 +8,7 @@ function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-const API_URL = 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface PredictionResponse {
   predicted_class: string;
