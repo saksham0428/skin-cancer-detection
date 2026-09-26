@@ -61,19 +61,16 @@ class SkinLesionDataset(Dataset):
 # Class weighting utilities
 # ---------------------------------------------------------------------------
 
-def compute_class_weights(train_df: pd.DataFrame) -> torch.Tensor:
+def compute_class_weights(train_df: pd.DataFrame, soften: bool = False) -> torch.Tensor:
     """
-    Compute inverse-frequency class weights for CrossEntropyLoss.
-
-    Strategy: weight_i = total_samples / (num_classes * count_i)
-    This is the sklearn 'balanced' formula — it ensures minority classes
-    receive proportionally larger gradient updates.
-
-    Args:
-        train_df: Training split DataFrame with a 'dx' column.
-
-    Returns:
-        Float tensor of shape (NUM_CLASSES,), ordered by CLASS_NAMES index.
+    Compute class weights for CrossEntropyLoss.
+    
+    If soften=False, uses standard sklearn 'balanced' formula:
+      weight_i = total / (num_classes * count_i)
+    
+    If soften=True, uses square-root softening normalized to mean=1:
+      raw_weight_i = (total / (num_classes * count_i)) ** 0.5
+      weight_i = raw_weight_i / mean(raw_weights)
     """
     counts = train_df["dx"].value_counts()
     total = len(train_df)
@@ -82,6 +79,14 @@ def compute_class_weights(train_df: pd.DataFrame) -> torch.Tensor:
     for class_name in CLASS_NAMES:
         count = counts.get(class_name, 1)  # avoid div-by-zero for unseen classes
         weight = total / (NUM_CLASSES * count)
+        
+        if soften:
+            weight = weight ** 0.5
+            
         weights.append(weight)
+
+    if soften:
+        mean_weight = sum(weights) / len(weights)
+        weights = [w / mean_weight for w in weights]
 
     return torch.tensor(weights, dtype=torch.float32)

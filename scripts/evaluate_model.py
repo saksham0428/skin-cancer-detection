@@ -60,8 +60,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    device = torch.device("cpu")
-    logger.info("Evaluating: %s on %s split", args.model, args.split)
+    from src.device import get_device
+    device = get_device()
 
     # --- Checkpoint ---
     if args.model == "resnet18":

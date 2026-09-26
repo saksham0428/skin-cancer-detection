@@ -52,8 +52,8 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     set_seed(RANDOM_SEED)
-    device = torch.device("cpu")  # CPU-only environment
-    logger.info("Device: %s", device)
+    from src.device import get_device
+    device = get_device()
 
     # --- Load splits ---
     train_df = pd.read_csv(PROCESSED_DIR / "train.csv")

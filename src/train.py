@@ -159,6 +159,7 @@ def train(
     class_weights: torch.Tensor,
     config: dict[str, Any],
     device: torch.device | None = None,
+    resume_checkpoint: str | None = None,
 ) -> dict[str, Any]:
     """
     Full training loop with early stopping and checkpoint saving.
@@ -175,7 +176,8 @@ def train(
         history dict with per-epoch metrics.
     """
     if device is None:
-        device = torch.device("cpu")
+        from src.device import get_device
+        device = get_device()
 
     set_seed(RANDOM_SEED)
     model = model.to(device)
@@ -185,11 +187,30 @@ def train(
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # --- Optimiser: Adam with weight decay for regularisation ---
-    optimizer = Adam(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=config["learning_rate"],
-        weight_decay=config.get("weight_decay", 1e-4),
-    )
+    if "backbone_lr" in config and config["backbone_lr"] is not None:
+        head_params = []
+        backbone_params = []
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            if "fc." in name or "classifier." in name:
+                head_params.append(param)
+            else:
+                backbone_params.append(param)
+        
+        optimizer = Adam(
+            [
+                {"params": backbone_params, "lr": config["backbone_lr"]},
+                {"params": head_params, "lr": config["learning_rate"]},
+            ],
+            weight_decay=config.get("weight_decay", 1e-4),
+        )
+    else:
+        optimizer = Adam(
+            filter(lambda p: p.requires_grad, model.parameters()),
+            lr=config["learning_rate"],
+            weight_decay=config.get("weight_decay", 1e-4),
+        )
 
     # --- LR scheduler: reduce on plateau (val F1 stagnation) ---
     scheduler = ReduceLROnPlateau(
@@ -214,8 +235,27 @@ def train(
         "lr": [],
     }
 
+    start_epoch = 1
     best_val_f1 = 0.0
+    best_val_loss = float("inf")
     patience_counter = 0
+
+    if resume_checkpoint:
+        logger.info("Loading checkpoint for resume: %s", resume_checkpoint)
+        ckpt = torch.load(resume_checkpoint, map_location="cpu", weights_only=False)
+        model.load_state_dict(ckpt["model_state_dict"])
+        
+        start_epoch = ckpt.get("epoch", 0) + 1
+        best_val_f1 = ckpt.get("val_f1", ckpt.get("best_val_f1", 0.0))
+        best_val_loss = ckpt.get("best_val_loss", float("inf"))
+        
+        if "optimizer_state_dict" in ckpt and "scheduler_state_dict" in ckpt:
+            optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+            scheduler.load_state_dict(ckpt["scheduler_state_dict"])
+            patience_counter = ckpt.get("patience_counter", 0)
+            logger.info("Faithfully resumed from epoch %d with optimizer/scheduler states.", start_epoch - 1)
+        else:
+            logger.warning("Checkpoint missing optimizer/scheduler states. Fallback resume from epoch %d with fresh optimizer.", start_epoch - 1)
 
     logger.info("=" * 60)
     logger.info("Training: %s | device: %s | epochs: %d", model_type, device, num_epochs)
@@ -223,7 +263,7 @@ def train(
                 config["learning_rate"], config.get("weight_decay", 1e-4), patience)
     logger.info("=" * 60)
 
-    for epoch in range(1, num_epochs + 1):
+    for epoch in range(start_epoch, num_epochs + 1):
         epoch_start = time.time()
 
         # Training
@@ -261,11 +301,14 @@ def train(
         # Checkpoint on improvement
         if val_f1 > best_val_f1:
             best_val_f1 = val_f1
+            best_val_loss = val_loss
             patience_counter = 0
 
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "scheduler_state_dict": scheduler.state_dict(),
                     "model_type": model_type,
                     "num_classes": NUM_CLASSES,
                     "class_names": CLASS_NAMES,
@@ -277,6 +320,8 @@ def train(
                     "epoch": epoch,
                     "val_f1": round(best_val_f1, 6),
                     "val_acc": round(val_acc, 6),
+                    "best_val_loss": round(best_val_loss, 6),
+                    "patience_counter": patience_counter,
                     "config": config,
                 },
                 checkpoint_path,
