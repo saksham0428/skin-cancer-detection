@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, Mocked } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mocked } from 'vitest';
 import axios from 'axios';
 import App from './App';
 
@@ -7,7 +7,7 @@ vi.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 
 // Mock URL.createObjectURL for the test environment
-global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
 
 describe('App Component', () => {
   beforeEach(() => {
