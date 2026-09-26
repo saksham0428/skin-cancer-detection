@@ -10,7 +10,7 @@
 # Run:
 #   docker run -p 8000:8000 \
 #     -v $(pwd)/models:/app/models \
-#     -e MODEL_CHECKPOINT=models/skin_lesion_resnet18.pth \
+#     -e MODEL_CHECKPOINT=models/skin_lesion_resnet18_softweights_finetuned.pth \
 #     -e ALLOWED_ORIGINS=http://localhost:3000 \
 #     skin-cancer-backend
 #
@@ -44,8 +44,8 @@ RUN pip install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining backend dependencies
-COPY requirements-backend.txt .
-RUN pip install --no-cache-dir -r requirements-backend.txt \
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
     # torch and torchvision are already installed above — skip re-download
     --extra-index-url https://download.pytorch.org/whl/cpu
 
@@ -54,17 +54,17 @@ RUN pip install --no-cache-dir -r requirements-backend.txt \
 # ---------------------------------------------------------------------------
 COPY src/ ./src/
 COPY app/ ./app/
+COPY models/ ./models/
 
 # Models directory — mount a volume here in production to inject the checkpoint
 # The API gracefully handles a missing checkpoint (starts but /predict returns 503)
-RUN mkdir -p models
 
 # ---------------------------------------------------------------------------
 # Runtime configuration defaults (override via environment variables)
 # ---------------------------------------------------------------------------
 ENV APP_ENV=production
 ENV MODEL_TYPE=resnet18
-ENV MODEL_CHECKPOINT=models/skin_lesion_resnet18.pth
+ENV MODEL_CHECKPOINT=models/skin_lesion_resnet18_softweights_finetuned.pth
 ENV ALLOWED_ORIGINS=http://localhost:3000
 ENV MAX_UPLOAD_SIZE_MB=10
 

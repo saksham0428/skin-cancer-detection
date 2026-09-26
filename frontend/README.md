@@ -1,3 +1,12 @@
+# Frontend deployment (Vercel)
+
+This folder is the Vercel deploy root. Import the repository in Vercel and set
+the **Root Directory** to `frontend`. Set `VITE_API_URL` to the public Render
+service URL, for example `https://skin-cancer-api.onrender.com`, then deploy.
+Use `.env.production.example` as the production-variable reference.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
