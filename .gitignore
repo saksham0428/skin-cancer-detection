@@ -19,8 +19,7 @@ data/processed/
 .env
 *.env
 
-# Model checkpoints (large binary files — use git-lfs or share separately)
-models/*.pth
+# Model checkpoints (tracked via Git LFS — do not re-add *.pth here)
 
 # Training artifacts (keep JSON history but not large binaries)
 models/confusion_matrix_*.png

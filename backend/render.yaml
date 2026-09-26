@@ -9,9 +9,9 @@ services:
       - key: APP_ENV
         value: production
       - key: MODEL_TYPE
-        value: resnet18
+        value: simple_cnn
       - key: MODEL_CHECKPOINT
-        value: models/skin_lesion_resnet18_softweights_finetuned.pth
+        value: models/skin_lesion_cnn_baseline.pth
       - key: MAX_UPLOAD_SIZE_MB
         value: "10"
       - key: ALLOWED_ORIGINS
